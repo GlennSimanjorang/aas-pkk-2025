@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { useForm, Controller } from "react-hook-form";
 import { setCookie } from "cookies-next";
-import { toast, Bounce } from "react-toastify";
+import { toast, Bounce, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   Select,
   SelectContent,
@@ -68,7 +69,7 @@ export function LoginForm({
           transition: Bounce,
         });
         
-        router.push("/main");
+        router.push("/");
       } else {
         toast.error("Token tidak ditemukan di respons server");
       }
@@ -87,6 +88,7 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <ToastContainer />
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>

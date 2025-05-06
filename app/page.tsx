@@ -1,9 +1,10 @@
-
+import Navbar from "@/components/nav-main-main"
 
 export default function main() {
     return (
-        <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-            <div className="w-full max-w-sm md:max-w-3xl rounded-md">
+        <div>
+            <Navbar />
+            <div className="">
                 <p>glenn ganteng</p>
             </div>
         </div>

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
+import {toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import {
   Form,
@@ -31,166 +32,203 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 
 const formSchema = z
   .object({
-    name: z
+    username: z
       .string()
       .min(2, { message: "Full Name must be at least 2 characters." }),
     password: z
       .string()
       .min(6, { message: "Password must be at least 6 characters long" })
       .regex(/[a-zA-Z0-9]/, { message: "Password must be alphanumeric" }),
-    confirmPassword: z.string(),
-    role: z.enum(["user", "seller", "admin"], {
-      errorMap: () => ({ message: "Role is required" }),
-    }),
+    phone: z.string().min(10).regex(/^\+?[0-9]{10,15}\d$/, {message: "nomor telepon minimal 10 digit"}),
+    role: z.string().min(1, { message: "Role is required" }),
+    email: z.string().min(6, {message: "Email dibutuhkan"}).email({message: "Email tidak valid"}).regex(/@gmail\.com$/, {message: "Email harus menggunakan domain gmail.com"}),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ["confirmPassword"],
-    message: "Passwords do not match",
-  });
 
 type FormValues = z.infer<typeof formSchema>;
 
 export default function RegisterForm() {
+  const router = useRouter();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      username: "",
       password: "",
-      confirmPassword: "",
-      role: "user",
+      phone: "",
+      email: "",
+      role: "",
     },
   });
 
   const onSubmit = async (values: FormValues) => {
     try {
-        const response = await axios.post("http://localhost:8000/api/auth/register"
+        const response = await axios.post(
+          "http://localhost:8000/api/auth/register",
+          values,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
         );
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(payload, null, 2)}</code>
-        </pre>
-      );
-    } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
-    }
+        if (response.status === 200) {
+          toast.success("Registration successful! Please login.", {
+            position: "top-right",
+            autoClose: 7000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+        });
+        router.push("/authenthication/login");
+        }
+      }
+     catch (error) {
+       if (axios.isAxiosError(error)) {
+         toast.error(error.response?.data.message || "Registration failed");
+       } else {
+         toast.error("An unexpected error occurred");
+       }
+       console.error("Error response:", axios.isAxiosError(error) ? error.response?.data : error);
+     }
+     
   };
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center px-4 py-8">
-  <Card className="w-full max-w-xl">
-    <CardHeader>
-      <CardTitle className="text-2xl">Register</CardTitle>
-      <CardDescription>
-        Create a new account by filling out the form below.
-      </CardDescription>
-    </CardHeader>
-    <CardContent>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Name Field */}
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Full Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="John Doe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <ToastContainer />
+      <Card className="w-full max-w-xl">
+        <CardHeader>
+          <CardTitle className="text-2xl">Register</CardTitle>
+          <CardDescription>
+            Create a new account by filling out the form below.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Name Field */}
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          {/* Password Field */}
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="•••••••"
-                    autoComplete="new-password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              {/* Password Field */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="•••••••"
+                        autoComplete="new-password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          {/* Confirm Password Field */}
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="•••••••"
-                    autoComplete="new-password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              {/* phone field */}
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>phone number</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="tel"
+                        placeholder="masukkan nomor telepon"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          {/* Role Field */}
-          <FormField
-            control={form.control}
-            name="role"
-            render={() => (
-              <FormItem>
-                <FormLabel>Role</FormLabel>
-                <FormControl>
-                  <Controller
-                    name="role"
-                    control={form.control}
-                    render={({ field: { value, onChange } }) => (
-                      <Select onValueChange={onChange} value={value}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="user">User</SelectItem>
-                          <SelectItem value="seller">Seller</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              {/* email field */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Emailr</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="mail"
+                        placeholder="masukkan email"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <Button type="submit" className="w-full">
-            Register
-          </Button>
-        </form>
-      </Form>
-      <div className="mt-4 text-center text-sm">
-        Already have an account?{" "}
-        <Link href="/login" className="underline">
-          Login
-        </Link>
-      </div>
-    </CardContent>
-  </Card>
-</div>
+              {/* Role Field */}
+              <FormField
+                control={form.control}
+                name="role"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <FormControl>
+                      <Controller
+                        name="role"
+                        control={form.control}
+                        render={({ field: { value, onChange } }) => (
+                          <Select onValueChange={onChange} value={value}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">User</SelectItem>
+                              <SelectItem value="seller">Seller</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
+              <Button type="submit" className="w-full">
+                Register
+              </Button>
+            </form>
+          </Form>
+          <div className="mt-4 text-center text-sm">
+            Already have an account?{" "}
+            <Link href="/login" className="underline">
+              Login
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
