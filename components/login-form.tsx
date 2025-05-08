@@ -59,6 +59,14 @@ export function LoginForm({
       const token = response.data?.content?.token;
       if (token) {
         setCookie("token", token, {
+          secure: true,
+          httpOnly: true,
+          maxAge: 60 * 60 * 24 * 7,
+          path: "/",
+          sameSite: "strict",
+        })
+        setCookie("role", data.role, {
+          secure: true,
           maxAge: 60 * 60 * 24 * 7,
           path: "/",
           sameSite: "strict",
@@ -164,7 +172,7 @@ export function LoginForm({
                     </Select>
                   )}
                 />
-                <a href="#" className="ml-auto text-sm underline-offset-2 ">
+                <a href="/authenthication/register" className="ml-auto text-sm underline-offset-2 ">
                   Tidak mempunyai akun?{" "}
                   <span className="hover:underline">Register</span>
                 </a>
