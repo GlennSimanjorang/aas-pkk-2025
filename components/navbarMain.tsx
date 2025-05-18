@@ -53,7 +53,11 @@ export default function Navbars() {
 
         {/* navbar dekstop */}
         <Link href="/" className="mt-4 hidden lg:flex ml-16" prefetch={false}>
-          <p className="text-bg-logo font-bold text-3xl">Logo</p>
+          <p
+            className="text-[#2D9CDB] font-bold text-3xl"
+          >
+            TBPedia
+          </p>
         </Link>
         <Kategori />
         <Input
@@ -62,7 +66,9 @@ export default function Navbars() {
           className="w-3/5 ml-2 mt-4"
         />
         <Link href="/user/wishlist">
-          <p className="font-medium text-sm mt-4 ml-8 hover:text-nav-text">Wishlist</p>
+          <p className="font-medium text-sm mt-4 ml-8 hover:text-nav-text">
+            Wishlist
+          </p>
         </Link>
         <nav className="ml-auto  lg:flex gap-6">
           {!role && (

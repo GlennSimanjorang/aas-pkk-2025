@@ -3,6 +3,8 @@ import Navbar from "@/components/navbarMain";
 import Konten from "@/components/konten";
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import Link from "next/link";
+import Image from "next/image";
 
 type Product = {
   id: string;
@@ -20,21 +22,21 @@ export default function Main() {
   const [, setSelectedProduct] = useState<Product | null>(null);
   const [, setIsLoadingDetail] = useState(false);
 
-
   useEffect(() => {
     const fetchInitialProducts = async () => {
       try {
         const response = await axios.get("http://localhost:8000/api/products");
         setData(response.data.content.data);
+        
         setNextPageUrl(response.data.content.next_page_url);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
     };
     fetchInitialProducts();
+
   }, []);
 
-  
   const loadMore = useCallback(async () => {
     if (!nextPageUrl || isLoading) return;
 
@@ -50,7 +52,6 @@ export default function Main() {
     }
   }, [nextPageUrl, isLoading]);
 
-  // Scroll handler
   const handleScroll = useCallback(() => {
     const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
     if (scrollTop + clientHeight >= scrollHeight - 100 && !isLoading) {
@@ -58,7 +59,6 @@ export default function Main() {
     }
   }, [isLoading, loadMore]);
 
-  // Add scroll event listener
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -93,21 +93,33 @@ export default function Main() {
 
         <div className="flex flex-wrap gap-3 justify-start ml-4 mb-6">
           {data.map((item) => (
-            <div
+            <Link
               key={item.id}
+              href={`/user/produk/${item.slug}`}
               onClick={() => handleProductClick(item.slug)}
-              className="w-48 h-72 aspect-square rounded-lg bg-white shadow-lg overflow-hidden relative cursor-pointer hover:shadow-xl transition-shadow"
+              className="w-48 h-72 rounded-lg bg-white shadow-lg overflow-hidden relative cursor-pointer hover:shadow-xl transition-shadow"
             >
-              <div className="absolute bottom-0 left-0 right-0 bg-white bg-opacity-90 text-black p-3">
-                <p className="text-sm font-medium truncate">{item.name}</p>
-                <p className="text-sm font-bold">
-                  Rp{item.price.toLocaleString("id-ID")}
-                </p>
-                <p className="text-xs">
-                  Total Stock: {item.stock.toLocaleString()}
-                </p>
+              <div>
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  width={150}
+                  height={150}
+                  className="object-cover w-full h-48"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-white bg-opacity-90 text-black p-3">
+                  <p className="text-sm font-medium truncate pt-2">
+                    {item.name}
+                  </p>
+                  <p className="text-sm font-bold pb-1.5">
+                    Rp{item.price.toLocaleString("id-ID")}
+                  </p>
+                  <p className="text-xs">
+                    Total Stock: <span className="text-gray-500">{item.stock.toLocaleString()}</span>
+                  </p>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
           {isLoading && (
             <div className="w-full text-center py-4">Memuat...</div>

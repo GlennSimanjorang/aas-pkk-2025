@@ -60,16 +60,16 @@ export function LoginForm({
       if (token) {
         setCookie("token", token, {
           secure: true,
-          httpOnly: true,
+          httpOnly: false,
           maxAge: 60 * 60 * 24 * 7,
           path: "/",
-          sameSite: "strict",
+          sameSite: "none",
         })
         setCookie("role", data.role, {
           secure: true,
           maxAge: 60 * 60 * 24 * 7,
           path: "/",
-          sameSite: "strict",
+          sameSite: "none",
         });
         toast.success("Berhasil login", {
           position: "top-center",
