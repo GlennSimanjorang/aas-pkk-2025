@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect,  } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import {
   NavigationMenu,
@@ -8,6 +8,8 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import { useRouter } from "next/navigation";
+
 
 export function Kategori() {
   interface Category {
@@ -25,7 +27,13 @@ export function Kategori() {
     slug: string;
   }
 
-
+  interface Product {
+    id: number;
+    name: string;
+    image: string;
+    price: number;
+    slug: string;
+  }
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
@@ -36,6 +44,12 @@ export function Kategori() {
   const [hoveredSubCategory, setHoveredSubCategory] = useState<string | null>(
     null
   );
+  const [hoveredSubSubCategory, setHoveredSubSubCategory] = useState<
+    string | null
+  >(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const router = useRouter();
+
 
   // Fetch categories on load
   useEffect(() => {
@@ -58,20 +72,37 @@ export function Kategori() {
   }, [selectedCategory]);
 
   // Fetch sub-sub-categories when sub-category is hovered
- useEffect(() => {
-   if (hoveredSubCategory) {
-     axios
-       .get(
-         `http://localhost:8000/api/sub-categories/${hoveredSubCategory}?with=subSubCategories`
-       )
-       .then((res) => {
-         setSubSubCategories(res.data.content.sub_sub_categories || []);
-       });
-   } else {
-     
-     setSubSubCategories([]);
-   }
- }, [hoveredSubCategory]);
+  useEffect(() => {
+    if (hoveredSubCategory) {
+      axios
+        .get(
+          `http://localhost:8000/api/sub-categories/${hoveredSubCategory}?with=subSubCategories`
+        )
+        .then((res) => {
+          setSubSubCategories(res.data.content.sub_sub_categories || []);
+        });
+    } else {
+      setSubSubCategories([]);
+    }
+  }, [hoveredSubCategory]);
+
+  // Fetch products when sub-sub-category is hovered
+  useEffect(() => {
+    if (hoveredSubSubCategory) {
+      axios
+        .get(
+          `http://localhost:8000/api/sub-sub-categories/${hoveredSubSubCategory}`
+        )
+        .then((res) => {
+          const products =
+            res.data.content.product_categories?.map((pc: any) => pc.product) ||
+            [];
+          setProducts(products);
+        });
+    } else {
+      setProducts([]);
+    }
+  }, [hoveredSubSubCategory]);
 
   return (
     <NavigationMenu className="mt-5 ml-2">
@@ -99,14 +130,17 @@ export function Kategori() {
 
             <div className="w-full border-b border-gray-200 mb-4" />
 
-            {/* Subkategori  */}
-            <div className="grid grid-cols-[auto_1fr] gap-4 h-72">
+            {/* Subkategori dan Produk */}
+            <div className="grid grid-cols-[auto_1fr_1fr] gap-4 h-72">
+              {/* Daftar Subkategori */}
               <div className="flex flex-col gap-2 w-32 border-r border-gray-300 pr-4">
                 {subCategories.map((sub) => (
                   <span
                     key={sub.slug}
                     className={`cursor-pointer text-sm font-semibold hover:font-bold ${
-                      hoveredSubCategory === sub.slug ? "bg-gray-200 p-1 rounded-lg" : ""
+                      hoveredSubCategory === sub.slug
+                        ? "bg-gray-200 p-1 rounded-lg"
+                        : ""
                     }`}
                     onMouseEnter={() => setHoveredSubCategory(sub.slug)}
                   >
@@ -115,13 +149,46 @@ export function Kategori() {
                 ))}
               </div>
 
-              <div className="grid grid-cols-3 gap-4 overflow-y-auto">
+              {/* Daftar Sub-Subkategori */}
+              <div className="gap-4 overflow-y-auto p-2">
                 {subSubCategories.map((subsub) => (
-                  <div key={subsub.slug} className="text-base font-semibold">
-                    {subsub.name}
+                  <div
+                    key={subsub.slug}
+                    className="cursor-pointer p-2 hover:bg-gray-100 rounded"
+                    onMouseEnter={() => setHoveredSubSubCategory(subsub.slug)}
+                    onMouseLeave={() => setHoveredSubSubCategory(null)}
+                  >
+                    <div className="font-semibold text-sm">{subsub.name}</div>
                   </div>
                 ))}
+                <div className="overflow-y-auto p-2">
+                  <div className="grid gap-4">
+                    {products.map((product) => (
+                      <div
+                        key={product.id}
+                        onClick={() => router.push(`user/produk/${product.slug}`)}
+                        className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                      >
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                        <div>
+                          <div className="text-sm font-medium">
+                            {product.name}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Rp {product.price.toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
+
+              {/* Daftar Produk */}
             </div>
           </NavigationMenuContent>
         </NavigationMenuItem>

@@ -19,7 +19,6 @@ type ProductDetail = {
   description: string;
   created_at: string;
   slug: string;
-  // tambahkan field lain sesuai response API
 };
 
 
@@ -54,7 +53,6 @@ export default function ProductDetailPage() {
     setWishlistLoading(true);
     try {
       const token = getCookie("token");
-      console.log("Token:", token);
 
       if (!token) {
         toast.error("Silahkan login terlebih dahulu!", {

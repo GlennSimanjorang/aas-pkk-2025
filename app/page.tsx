@@ -4,7 +4,6 @@ import Konten from "@/components/konten";
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import Link from "next/link";
-import Image from "next/image";
 
 type Product = {
   id: string;
@@ -100,7 +99,7 @@ export default function Main() {
               className="w-48 h-72 rounded-lg bg-white shadow-lg overflow-hidden relative cursor-pointer hover:shadow-xl transition-shadow"
             >
               <div>
-                <Image
+                <img
                   src={item.image}
                   alt={item.name}
                   width={150}
