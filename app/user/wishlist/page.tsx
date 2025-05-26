@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "@/components/navbarMain";
-import { toast, ToastContainer} from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { getCookie } from "cookies-next";
 import {
   NavigationMenu,
@@ -13,7 +13,6 @@ import {
   NavigationMenuTriggers,
 } from "@/components/ui/navigation-menu";
 
-
 type WishlistItem = {
   slug: string;
   name: string;
@@ -21,9 +20,6 @@ type WishlistItem = {
   price: number;
   stock: number;
 };
-
-
-
 
 export default function Wishlist() {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
@@ -33,7 +29,7 @@ export default function Wishlist() {
     const fetchWishlist = async () => {
       const token = getCookie("token");
 
-      if (!token) {{
+      if (!token) {
         toast.error("Please login to view your wishlist", {
           position: "top-right",
           autoClose: 5000,
@@ -43,31 +39,35 @@ export default function Wishlist() {
         });
         window.location.href = "/authenthication/login";
         return;
-      }}
+      }
 
       setIsLoading(true);
       try {
-        const response = await axios.get("http://localhost:8000/api/user/wishlists",{
-          headers: {
-            Authorization: `Bearer ${token}`
+        const response = await axios.get(
+          "http://localhost:8000/api/user/wishlists",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         setWishlist(response.data.content.products);
-
-      } catch  {
+      } catch {
         toast.error("Error fetching wishlist", {
           position: "top-right",
           autoClose: 5000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
-      });}
-    }
+        });
+      }
+      setIsLoading(false);
+    };
     fetchWishlist();
   }, []);
 
-  const  destroyWishlistItem = async (slug: string) => {
+  const destroyWishlistItem = async (slug: string) => {
     const token = getCookie("token");
     try {
       await axios.delete(`http://localhost:8000/api/user/wishlists/${slug}`, {
@@ -86,7 +86,7 @@ export default function Wishlist() {
         closeOnClick: true,
         pauseOnHover: true,
       });
-    } catch  {
+    } catch {
       toast.error("Error removing item from wishlist", {
         position: "top-right",
         autoClose: 5000,
@@ -95,32 +95,33 @@ export default function Wishlist() {
         pauseOnHover: true,
       });
     }
-  }
+  };
 
   return (
-    <div className="">
+    <div>
       <ToastContainer />
       <Navbar />
-      <div className="w-full h-screen bg-[#F2F5F9]">
-        <h1 className="font-bold text-2xl ml-28 mb-8 pt-10">Wishlist</h1>
-        <div className="ml-28 mr-28 flex flex-row space-x-5">
-          {/* Daftar item wishlist */}
-          {wishlist.map((item) => (
+      <div className="w-full min-h-screen bg-[#F2F5F9]">
+        <h1 className="font-bold text-2xl px-6 lg:px-28 mb-8 pt-10">
+          Wishlist
+        </h1>
+        <div className="px-6 lg:px-28 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-10">
+          {wishlist.map((item, index) => (
             <div
-              key={item.slug}
-              className="w-44 h-80  bg-white rounded-lg items-center gap-5"
+              key={`${item.slug}-${index}`}
+              className="bg-white rounded-lg p-3 shadow-sm flex flex-col"
             >
               <img
                 src={item.image}
                 alt={item.name}
-                className=" object-cover aspect-square rounded lg mb-4"
+                className="w-full aspect-square object-cover rounded-lg mb-4"
               />
-              <p className="font-medium text-sm ml-3">{item.name}</p>
-              <p className="font-bold text-base ml-3 mt-2">Rp.{item.price}</p>
-              <p className="font-medium text-sm ml-3 text-gray-400 ">
-                stock:{item.stock}
+              <p className="font-medium text-sm">{item.name}</p>
+              <p className="font-bold text-base mt-2">Rp.{item.price}</p>
+              <p className="font-medium text-sm text-gray-400">
+                Stock: {item.stock}
               </p>
-              <NavigationMenu className="mt-3 ml-2">
+              <NavigationMenu className="mt-3">
                 <NavigationMenuList>
                   <div className="flex flex-row gap-2">
                     <NavigationMenuItem>
@@ -134,10 +135,8 @@ export default function Wishlist() {
                         </button>
                       </NavigationMenuContent>
                     </NavigationMenuItem>
-                    <div className="">
-                      <button>
-                        Tes
-                      </button>
+                    <div>
+                      <button>Tes</button>
                     </div>
                   </div>
                 </NavigationMenuList>

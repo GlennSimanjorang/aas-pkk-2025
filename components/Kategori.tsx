@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/navigation-menu";
 import { useRouter } from "next/navigation";
 
-
 export function Kategori() {
   interface Category {
     name: string;
@@ -50,15 +49,14 @@ export function Kategori() {
   const [products, setProducts] = useState<Product[]>([]);
   const router = useRouter();
 
-
-  // Fetch categories on load
+  // Fetch main categories
   useEffect(() => {
     axios.get("http://localhost:8000/api/categories").then((res) => {
       setCategories(res.data.content.data);
     });
   }, []);
 
-  // Fetch sub-categories when category is selected
+  // Fetch sub-categories
   useEffect(() => {
     if (selectedCategory) {
       axios
@@ -71,7 +69,7 @@ export function Kategori() {
     }
   }, [selectedCategory]);
 
-  // Fetch sub-sub-categories when sub-category is hovered
+  // Fetch sub-sub-categories
   useEffect(() => {
     if (hoveredSubCategory) {
       axios
@@ -86,7 +84,7 @@ export function Kategori() {
     }
   }, [hoveredSubCategory]);
 
-  // Fetch products when sub-sub-category is hovered
+  // Fetch products
   useEffect(() => {
     if (hoveredSubSubCategory) {
       axios
@@ -112,9 +110,9 @@ export function Kategori() {
           <NavigationMenuContent className="md:w-7xl h-96">
             {/* Kategori */}
             <div className="flex gap-5 p-2">
-              {categories.map((cat) => (
+              {categories.map((cat, index) => (
                 <button
-                  key={cat.slug}
+                  key={`${cat.slug}-${index}`}
                   className={`text-sm px-2 py-1 rounded ${
                     selectedCategory === cat.slug ? "text-nav-text" : ""
                   }`}
@@ -132,11 +130,11 @@ export function Kategori() {
 
             {/* Subkategori dan Produk */}
             <div className="grid grid-cols-[auto_1fr_1fr] gap-4 h-72">
-              {/* Daftar Subkategori */}
-              <div className="flex flex-col gap-2 w-32 border-r border-gray-300 pr-4">
-                {subCategories.map((sub) => (
+              {/* Subkategori */}
+              <div className="flex flex-col gap-2 w-32 border-r border-gray-300 pr-4 h-64 overflow-y-auto">
+                {subCategories.map((sub, index) => (
                   <span
-                    key={sub.slug}
+                    key={`${sub.slug}-${index}`}
                     className={`cursor-pointer text-sm font-semibold hover:font-bold ${
                       hoveredSubCategory === sub.slug
                         ? "bg-gray-200 p-1 rounded-lg"
@@ -149,46 +147,43 @@ export function Kategori() {
                 ))}
               </div>
 
-              {/* Daftar Sub-Subkategori */}
-              <div className="gap-4 overflow-y-auto p-2">
-                {subSubCategories.map((subsub) => (
+              {/* Sub-subkategori + Produk Inline */}
+              <div className="gap-4 overflow-y-auto p-2 h-64 col-span-2">
+                {subSubCategories.map((subsub, index) => (
                   <div
-                    key={subsub.slug}
-                    className="cursor-pointer p-2 hover:bg-gray-100 rounded"
+                    key={`${subsub.slug}-${index}`}
+                    className="cursor-pointer p-2 hover:bg-gray-100 rounded transition-all duration-300"
                     onMouseEnter={() => setHoveredSubSubCategory(subsub.slug)}
                     onMouseLeave={() => setHoveredSubSubCategory(null)}
                   >
                     <div className="font-semibold text-sm">{subsub.name}</div>
+
+                    {hoveredSubSubCategory === subsub.slug && products.length > 0 && (
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        {products.map((product) => (
+                          <div
+                            key={product.id}
+                            onClick={() => router.push(`user/produk/${product.slug}`)}
+                            className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                          >
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-10 h-10 object-cover rounded"
+                            />
+                            <div>
+                              <div className="text-xs font-medium">{product.name}</div>
+                              <div className="text-xs text-gray-500">
+                                Rp {product.price.toLocaleString()}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
-                <div className="overflow-y-auto p-2">
-                  <div className="grid gap-4">
-                    {products.map((product) => (
-                      <div
-                        key={product.id}
-                        onClick={() => router.push(`user/produk/${product.slug}`)}
-                        className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded"
-                      >
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                        <div>
-                          <div className="text-sm font-medium">
-                            {product.name}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            Rp {product.price.toLocaleString()}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
-
-              {/* Daftar Produk */}
             </div>
           </NavigationMenuContent>
         </NavigationMenuItem>

@@ -3,12 +3,10 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbars from "@/components/navbarMain";
 import { Button } from "@/components/ui/button";
-import {  toast, ToastContainer, Bounce } from "react-toastify";
+import { toast, ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
-
-
 
 type ProductDetail = {
   id: number;
@@ -21,8 +19,6 @@ type ProductDetail = {
   slug: string;
 };
 
-
-
 export default function ProductDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -30,7 +26,6 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [wishlistLoading, setWishlistLoading] = useState(false);
-  
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -39,6 +34,7 @@ export default function ProductDetailPage() {
           `http://localhost:8000/api/products/${slug}`
         );
         setProduct(response.data.content);
+        console.log(response.data.content);
       } catch (error) {
         console.error("Error fetching product:", error);
       } finally {
@@ -48,6 +44,40 @@ export default function ProductDetailPage() {
 
     fetchProduct();
   }, [slug]);
+
+  const handleBuyProduct = async () => {
+    try {
+      const token = getCookie("token");
+
+      const response = await axios.post(
+        `http://localhost:8000/api/user/orders`,
+        {
+          product: product?.slug,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        window.open(response.data.content.seller_phone, "_blank");
+
+        toast.success("Berhasil melakukan pembelian", {
+          position: "top-center",
+          autoClose: 3000,
+          transition: Bounce,
+        });
+      }
+    } catch {
+      toast.error("Gagal melakukan pembelian", {
+        position: "top-center",
+        autoClose: 3000,
+        transition: Bounce,
+      });
+    }
+  };
 
   const handleAddToWishlist = async () => {
     setWishlistLoading(true);
@@ -65,7 +95,7 @@ export default function ProductDetailPage() {
 
       const response = await axios.post(
         `http://localhost:8000/api/user/wishlists/${slug}`,
-        {}, 
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -73,6 +103,7 @@ export default function ProductDetailPage() {
           withCredentials: true,
         }
       );
+
       if (response.status === 200) {
         toast.success("Berhasil menambahkan ke wishlist", {
           position: "top-center",
@@ -86,7 +117,7 @@ export default function ProductDetailPage() {
           transition: Bounce,
         });
       }
-    } catch  {
+    } catch {
       toast.error("Gagal menambahkan ke wishlist", {
         position: "top-center",
         autoClose: 3000,
@@ -108,21 +139,20 @@ export default function ProductDetailPage() {
   return (
     <div className="">
       <ToastContainer />
-      {/* Navbar */}
       <Navbars />
 
-      <div className="flex flex-row  justify-center mt-10 mb-10 gap-20">
+      <div className="flex flex-col lg:flex-row justify-center items-center mt-10 mb-10 gap-10 px-4">
         {/* Bagian Gambar */}
-        <div className="">
+        <div>
           <img
             src={product.image}
             alt={product.name}
-            className="w-80 h-80 rounded-lg"
+            className="w-60 h-60 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-lg object-cover"
           />
         </div>
 
-        {/* Bagian Informasi Produk */}
-        <div className="">
+        {/* Informasi Produk */}
+        <div className="max-w-md w-full">
           <h1 className="text-xl font-bold">{product.name}</h1>
           <p className="mb-5 mt-1 text-sm">
             Total Stock:{" "}
@@ -135,46 +165,47 @@ export default function ProductDetailPage() {
           </p>
 
           <div className="mb-6">
-            <span className="w-80 h-0.5 bg-gray-200 inline-block"></span>
+            <span className="block h-0.5 bg-gray-200 my-2"></span>
             <h3 className="text-lg font-semibold text-[#2D9CDB]">Detail</h3>
-            <span className="w-80 h-0.5 bg-gray-200 inline-block"></span>
+            <span className="block h-0.5 bg-gray-200 my-2"></span>
             <p className="text-gray-600">{product.description}</p>
           </div>
         </div>
 
-        <div className="w-72 h-72 border-1 border-gray-400 rounded-lg mr-20 mt-10">
-          <p className="mt-3 font-bold text-lg ml-3">
-            Atur Pembelian & Whistlist
-          </p>
-          <div className="flex flex-row mt-4">
+        {/* Box Atur Pembelian & Wishlist */}
+        <div className="w-full max-w-sm border border-gray-300 rounded-lg p-4">
+          <p className="font-bold text-lg mb-3">Atur Pembelian & Wishlist</p>
+          <div className="flex items-center gap-3">
             <img
               src={product.image}
               alt={product.name}
-              className="w-10 h-10 rounded-lg ml-4"
+              className="w-10 h-10 rounded-lg object-cover"
             />
-            <p className="ml-3 text-sm font-medium mt-2">{product.name}</p>
+            <p className="text-sm font-medium">{product.name}</p>
           </div>
-          <div className="justify-center items-center flex mt-4">
-            <span className="w-64   h-0.5 bg-gray-200 inline-block"></span>
-          </div>
-          <p className="ml-4 mt-2">
+          <span className="block h-0.5 bg-gray-200 my-4"></span>
+          <p>
             Stok:{" "}
             <span className="font-semibold">
               {product.stock.toLocaleString()}
             </span>
           </p>
           <div className="flex justify-between mt-2">
-            <p className="text-gray-300 font-normal text-base ml-4">Total </p>
-            <p className="text-black font-bold text-lg mr-2">
+            <p className="text-gray-400">Total</p>
+            <p className="text-black font-bold text-lg">
               Rp{product.price.toLocaleString("id-ID")}
             </p>
           </div>
-          <Button onClick={handleAddToWishlist} 
-            className="mt-2 w-64 justify-center ml-3 text-white bg-[#2D9CDB] border border-[#2D9CDB] hover:bg-white hover:text-[#2D9CDB]"
+          <Button
+            onClick={handleAddToWishlist}
+            className="mt-4 w-full text-white bg-[#2D9CDB] border border-[#2D9CDB] hover:bg-white hover:text-[#2D9CDB]"
           >
             +Wishlist
           </Button>
-          <Button className="mt-2 w-64 justify-center ml-3 bg-white text-[#2D9CDB] border border-[#2D9CDB] hover:bg-gray-200">
+          <Button
+            onClick={handleBuyProduct}
+            className="mt-2 w-full bg-white text-[#2D9CDB] border border-[#2D9CDB] hover:bg-gray-200"
+          >
             Beli Langsung
           </Button>
         </div>
@@ -182,5 +213,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
-

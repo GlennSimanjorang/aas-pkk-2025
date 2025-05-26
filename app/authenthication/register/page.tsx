@@ -67,8 +67,10 @@ export default function RegisterForm() {
 
   const onSubmit = async (values: FormValues) => {
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+      
         const response = await axios.post(
-          "http://localhost:8000/api/auth/register",
+          `${baseUrl}/api/auth/register`,
           values,
           {
             headers: {
@@ -223,7 +225,7 @@ export default function RegisterForm() {
           </Form>
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
-            <Link href="/login" className="underline">
+            <Link href="/authenthication/login" className="underline">
               Login
             </Link>
           </div>

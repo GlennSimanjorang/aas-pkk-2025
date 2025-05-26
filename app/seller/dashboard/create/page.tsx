@@ -52,13 +52,15 @@ export default function ProductForm() {
     Array<{ id: number; name: string }>
   >([]);
   const [isLoading, setIsLoading] = useState(false);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
     async function fetchCategories() {
       setIsLoading(true);
       try {
+        
         let allCategories: Array<{ id: number; name: string }> = [];
-        let nextPageUrl = "http://localhost:8000/api/sub-sub-categories";
+        let nextPageUrl = `${baseUrl}/api/sub-sub-categories`;
 
         while (nextPageUrl) {
           const res = await axios.get(nextPageUrl);
@@ -93,7 +95,7 @@ export default function ProductForm() {
       );
 
       const token = getCookie("token");
-      await axios.post("http://localhost:8000/api/seller/products", formData, {
+      await axios.post(`${baseUrl}/api/seller/products`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,

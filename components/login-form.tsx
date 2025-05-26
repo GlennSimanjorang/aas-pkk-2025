@@ -42,9 +42,9 @@ export function LoginForm({
 
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/auth/login",
+      const response = await axios.post(`${baseUrl}/api/auth/login`,
         data,
         {
           headers: {
@@ -71,6 +71,12 @@ export function LoginForm({
           path: "/",
           sameSite: "none",
         });
+        setCookie("username", data.username, {
+          secure: true,
+          maxAge: 60 * 60 * 24 * 7,
+          path: "/",
+          sameSite: "none",
+        });        
         toast.success("Berhasil login", {
           position: "top-center",
           autoClose: 5000,
