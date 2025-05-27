@@ -59,11 +59,17 @@ export default function Order() {
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": true,
         },
       });
-      setData(response.data.content.data);
+
+      console.log("API Response:", response.data);
+
+      // Perhatikan perubahan di sini - mengakses content.data
+      setData(response.data?.content?.data || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
+      setData([]);
     }
   };
 
@@ -86,6 +92,7 @@ export default function Order() {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": true,
           },
         }
       );

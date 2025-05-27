@@ -78,7 +78,12 @@ export default function EditProductForm() {
         // Fetch product data
         const productResponse = await axios.get(
           `${baseUrl}/api/seller/products/${slug}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "ngrok-skip-browser-warning": "true",
+            },
+          }
         );
 
         const productData = productResponse.data.content;
@@ -96,13 +101,27 @@ export default function EditProductForm() {
         let nextPageUrl = `${baseUrl}/api/sub-sub-categories`;
 
         while (nextPageUrl) {
-          const res = await axios.get(nextPageUrl);
-          const responseData = res.data.content;
-          allCategories = [...allCategories, ...responseData.data];
-          nextPageUrl = responseData.next_page_url;
-        }
+          const res = await axios.get(nextPageUrl, {
+            headers: {
+              "ngrok-skip-browser-warning": "true",
+              Authorization: `Bearer ${getCookie("token")}`,
+            },
+          });
 
-        setCategories(allCategories);
+          const responseData = res.data.content.data;
+          const pagination = res.data.content;
+
+          allCategories = [...allCategories, ...responseData];
+          nextPageUrl = pagination.next_page_url;
+
+          if (nextPageUrl) {
+            const url = new URL(nextPageUrl);
+            const pathAndQuery = url.pathname + url.search;
+            nextPageUrl = `${baseUrl}${pathAndQuery}`;
+          }
+        }
+        setCategories(allCategories); 
+
       } catch (error) {
         console.error("Gagal mengambil data:", error);
         toast.error("Gagal memuat data produk");
@@ -133,6 +152,7 @@ export default function EditProductForm() {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": true,
           },
         }
       );

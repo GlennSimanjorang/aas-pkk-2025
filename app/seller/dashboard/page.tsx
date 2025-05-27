@@ -59,14 +59,12 @@ export default function Page() {
     const FetchProduct = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(
-          `${baseUrl}/api/seller/products`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await axios.get(`${baseUrl}/api/seller/products`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": true,
+          },
+        });
         setData(response.data.content.data);
       } catch {
         toast.error("Gagal mengambil data", {
@@ -89,7 +87,7 @@ export default function Page() {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "X-Requested-With": "XMLHttpRequest",
+            "ngrok-skip-browser-warning": "true",
           },
         }
       );
@@ -118,6 +116,7 @@ export default function Page() {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
+            "ngrok-skip-browser-warning": "true",
           },
         }
       );

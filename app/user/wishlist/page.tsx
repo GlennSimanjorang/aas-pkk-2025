@@ -10,10 +10,12 @@ import {
   NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuList,
-  NavigationMenuTriggers,
+  NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import Link from "next/link";
 
 type WishlistItem = {
+  id: string;
   slug: string;
   name: string;
   image: string;
@@ -23,6 +25,7 @@ type WishlistItem = {
 
 export default function Wishlist() {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -43,14 +46,12 @@ export default function Wishlist() {
 
       setIsLoading(true);
       try {
-        const response = await axios.get(
-          "http://localhost:8000/api/user/wishlists",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await axios.get(`${baseUrl}/api/user/wishlists`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        });
 
         setWishlist(response.data.content.products);
       } catch {
@@ -70,9 +71,10 @@ export default function Wishlist() {
   const destroyWishlistItem = async (slug: string) => {
     const token = getCookie("token");
     try {
-      await axios.delete(`http://localhost:8000/api/user/wishlists/${slug}`, {
+      await axios.delete(`${baseUrl}/api/user/wishlists/${slug}`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
         },
       });
 
@@ -111,21 +113,23 @@ export default function Wishlist() {
               key={`${item.slug}-${index}`}
               className="bg-white rounded-lg p-3 shadow-sm flex flex-col"
             >
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-full aspect-square object-cover rounded-lg mb-4"
-              />
-              <p className="font-medium text-sm">{item.name}</p>
-              <p className="font-bold text-base mt-2">Rp.{item.price}</p>
-              <p className="font-medium text-sm text-gray-400">
-                Stock: {item.stock}
-              </p>
+              <Link href={`/user/produk/${item.slug}`} className="block">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full aspect-square object-cover rounded-lg mb-4"
+                />
+                <p className="font-medium text-sm">{item.name}</p>
+                <p className="font-bold text-base mt-2">Rp.{item.price}</p>
+                <p className="font-medium text-sm text-gray-400">
+                  Stock: {item.stock}
+                </p>
+              </Link>
               <NavigationMenu className="mt-3">
                 <NavigationMenuList>
                   <div className="flex flex-row gap-2">
                     <NavigationMenuItem>
-                      <NavigationMenuTriggers>...</NavigationMenuTriggers>
+                      <NavigationMenuTrigger>...</NavigationMenuTrigger>
                       <NavigationMenuContent className="min-w-[120px]">
                         <button
                           onClick={() => destroyWishlistItem(item.slug)}
@@ -135,9 +139,6 @@ export default function Wishlist() {
                         </button>
                       </NavigationMenuContent>
                     </NavigationMenuItem>
-                    <div>
-                      <button>Tes</button>
-                    </div>
                   </div>
                 </NavigationMenuList>
               </NavigationMenu>

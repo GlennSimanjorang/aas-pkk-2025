@@ -1,10 +1,28 @@
 "use client";
-
-import { useEffect } from "react";
-import { toast } from "sonner";
+import { AppSidebar } from "@/components/app-sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import * as z from "zod";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { getCookie } from "cookies-next";
+
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -22,10 +40,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { getCookie } from "cookies-next";
-import { useState } from "react";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama produk harus diisi"),
@@ -48,31 +62,44 @@ export default function ProductForm() {
   });
 
   const router = useRouter();
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const [categories, setCategories] = useState<
     Array<{ id: number; name: string }>
   >([]);
   const [isLoading, setIsLoading] = useState(false);
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
     async function fetchCategories() {
       setIsLoading(true);
       try {
-        
         let allCategories: Array<{ id: number; name: string }> = [];
         let nextPageUrl = `${baseUrl}/api/sub-sub-categories`;
 
         while (nextPageUrl) {
-          const res = await axios.get(nextPageUrl);
-          const responseData = res.data.content;
+          const res = await axios.get(nextPageUrl, {
+            headers: {
+              "ngrok-skip-browser-warning": "true",
+              Authorization: `Bearer ${getCookie("token")}`,
+            },
+          });
 
-          allCategories = [...allCategories, ...responseData.data];
-          nextPageUrl = responseData.next_page_url;
+          const responseData = res.data.content.data;
+          const pagination = res.data.content;
+
+          allCategories = [...allCategories, ...responseData];
+          nextPageUrl = pagination.next_page_url;
+
+          if (nextPageUrl) {
+          
+            const url = new URL(nextPageUrl);
+            const pathAndQuery = url.pathname + url.search;
+            nextPageUrl = `${baseUrl}${pathAndQuery}`;
+          }
         }
 
         setCategories(allCategories);
       } catch (err) {
-        console.error("Gagal mengambil kategori", err);
+        console.error("Error fetching categories:", err);
         toast.error("Gagal memuat kategori");
       } finally {
         setIsLoading(false);
@@ -80,7 +107,8 @@ export default function ProductForm() {
     }
 
     fetchCategories();
-  }, []);
+  }, [baseUrl]);
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -99,6 +127,7 @@ export default function ProductForm() {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": true,
         },
       });
 
@@ -111,6 +140,37 @@ export default function ProductForm() {
   }
 
   return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-[orientation=vertical]:h-4"
+            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="/seller/dashboard">
+                    Seller Dashboard
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/seller/dashboard">
+                    Seller Product
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Tambah Product</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
     <div className="flex flex-1 flex-col p-4 pt-6 max-w-lg mx-auto">
       <h1 className="text-xl font-bold py-4">Tambah Produk Baru</h1>
       <div className="rounded-xl bg-muted/90 border dark:border-none dark:bg-muted/50 p-8">
@@ -119,6 +179,7 @@ export default function ProductForm() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-8 max-w-3xl mx-auto py-10"
           >
+            {/* Nama Produk */}
             <FormField
               control={form.control}
               name="name"
@@ -133,6 +194,7 @@ export default function ProductForm() {
               )}
             />
 
+            {/* Gambar Produk */}
             <FormField
               control={form.control}
               name="imageFile"
@@ -152,6 +214,7 @@ export default function ProductForm() {
               )}
             />
 
+            {/* Harga */}
             <FormField
               control={form.control}
               name="price"
@@ -171,6 +234,7 @@ export default function ProductForm() {
               )}
             />
 
+            {/* Stok */}
             <FormField
               control={form.control}
               name="stock"
@@ -190,6 +254,7 @@ export default function ProductForm() {
               )}
             />
 
+            {/* Kategori */}
             <FormField
               control={form.control}
               name="sub_sub_category_id"
@@ -226,5 +291,7 @@ export default function ProductForm() {
         </Form>
       </div>
     </div>
+    </SidebarInset>
+    </SidebarProvider>
   );
 }

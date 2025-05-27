@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot } from "lucide-react";
+import { Bot, Atom } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -13,6 +13,10 @@ export function NavMain() {
     <SidebarGroup>
       <SidebarGroupLabel>Fitur</SidebarGroupLabel>
       <SidebarMenu>
+        <Link href={"/seller/dashboard/"} className="flex items-center gap-2 px-4 py-2 text-sm font-medium">
+          <Atom className="w-6 h-6" />
+          Dashboard
+        </Link>
         <Link
           href={"/seller/dashboard/order"}
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium"
@@ -20,6 +24,7 @@ export function NavMain() {
           <Bot className="w-6 h-6" />
           Order
         </Link>
+        
       </SidebarMenu>
     </SidebarGroup>
   );

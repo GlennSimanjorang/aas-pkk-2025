@@ -26,13 +26,16 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:8000/api/products/${slug}`
-        );
+        const response = await axios.get(`${baseUrl}/api/products/${slug}`, {
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
+        });
         setProduct(response.data.content);
         console.log(response.data.content);
       } catch (error) {
@@ -50,13 +53,14 @@ export default function ProductDetailPage() {
       const token = getCookie("token");
 
       const response = await axios.post(
-        `http://localhost:8000/api/user/orders`,
+        `${baseUrl}/api/user/orders`,
         {
           product: product?.slug,
         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
           },
         }
       );
@@ -70,8 +74,15 @@ export default function ProductDetailPage() {
           transition: Bounce,
         });
       }
+      if (response.status ===  400) {
+        toast.error("Produk sudah dibeli", {
+          position: "top-center",
+          autoClose: 3000,
+          transition: Bounce,
+        });
+      }
     } catch {
-      toast.error("Gagal melakukan pembelian", {
+      toast.error("Produk Sudah Pernah Dibeli", {
         position: "top-center",
         autoClose: 3000,
         transition: Bounce,
@@ -94,11 +105,12 @@ export default function ProductDetailPage() {
       }
 
       const response = await axios.post(
-        `http://localhost:8000/api/user/wishlists/${slug}`,
+        `${baseUrl}/api/user/wishlists/${slug}`,
         {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
           },
           withCredentials: true,
         }

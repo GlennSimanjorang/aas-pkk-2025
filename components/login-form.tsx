@@ -44,46 +44,45 @@ export function LoginForm({
     setIsLoading(true);
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     try {
-      const response = await axios.post(`${baseUrl}/api/auth/login`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await axios.post(`${baseUrl}/api/auth/login`, data, {
+        headers: {
+          "ngrok-skip-browser-warning": true,
+        },
+        withCredentials: true,
+      });
       
+      if (response.status ===200) {
+        const token = response.data?.content?.token;
+        console.log(token);
 
-      const token = response.data?.content?.token;
-      if (token) {
-        setCookie("token", token, {
-          secure: true,
-          httpOnly: false,
-          maxAge: 60 * 60 * 24 * 7,
-          path: "/",
-          sameSite: "none",
-        })
-        setCookie("role", data.role, {
-          secure: true,
-          maxAge: 60 * 60 * 24 * 7,
-          path: "/",
-          sameSite: "none",
-        });
-        setCookie("username", data.username, {
-          secure: true,
-          maxAge: 60 * 60 * 24 * 7,
-          path: "/",
-          sameSite: "none",
-        });        
-        toast.success("Berhasil login", {
-          position: "top-center",
-          autoClose: 5000,
-          transition: Bounce,
-        });
-        
-        router.push("/");
+        if (token) {
+          setCookie("token", token, {
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 60 * 60 * 24 * 7,
+            path: "/",
+            sameSite: "lax",
+          });
+          setCookie("role", data.role, {
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 60 * 60 * 24 * 7,
+            path: "/",
+            sameSite: "lax",
+          });
+          setCookie("username", data.username, {
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 60 * 60 * 24 * 7,
+            path: "/",
+            sameSite: "lax",
+          });
+          toast.success("Berhasil login", {
+            position: "top-center",
+            autoClose: 5000,
+            transition: Bounce,
+          });
+
+          router.push("/");
+        }
+      
       } else {
         toast.error("Token tidak ditemukan di respons server");
       }
@@ -108,9 +107,9 @@ export function LoginForm({
           <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
-                <h1 className="text-2xl font-bold">Welcome back</h1>
+                <h1 className="text-2xl font-bold">Selamat Datang</h1>
                 <p className="text-muted-foreground text-balance">
-                  Login to your Acme Inc account
+                  Login ke TB Pedia Akun
                 </p>
               </div>
 

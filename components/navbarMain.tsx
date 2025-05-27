@@ -29,7 +29,6 @@ import {
   AlertDialogAction,
   AlertDialogTitle,
   AlertDialogDescription,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 interface Product {
@@ -66,6 +65,7 @@ export default function Navbars() {
   const [error, setError] = useState("");
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const router = useRouter();
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
     const userRole = getCookie("role");
@@ -83,7 +83,12 @@ export default function Navbars() {
 
         while (hasMorePages) {
           const response = await fetch(
-            `http://localhost:8000/api/products?page=${currentPage}`
+            `${baseUrl}/api/products?page=${currentPage}`,
+            {
+              headers: {
+                "ngrok-skip-browser-warning": "true",
+              },
+            }
           );
 
           if (!response.ok) throw new Error("Failed to fetch products");
@@ -134,10 +139,11 @@ export default function Navbars() {
   const handleLogout = async () => {
     const token = getCookie("token");
     try {
-      await fetch("http://localhost:8000/api/auth/logout", {
+      await fetch(`${baseUrl}/api/auth/logout`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
         },
       });
     } catch (error) {
@@ -153,97 +159,80 @@ export default function Navbars() {
   return (
     <div className="sticky top-0 bg-white z-50">
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <header className="flex h-20 w-full shrink-0 items-center px-4 md:px-6">
-          {/* Mobile Navbar */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="lg:hidden mt-1">
-                <MenuIcon className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[250px] flex flex-col">
-              <SheetTitle className="text-lg font-semibold mb-4">
-                Menu
-              </SheetTitle>
+        <header className="flex h-20 w-full shrink-0 items-center px-4 md:px-6 justify-between gap-4">
+          {/* Left Section - Mobile Menu & Logo */}
+          <div className="flex items-center gap-4">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="lg:hidden">
+                  <MenuIcon className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[250px] flex flex-col">
+                <SheetTitle className="text-lg font-semibold mb-4 mt-3 ml-2">
+                  Menu
+                </SheetTitle>
 
-              <div className="grid gap-2 py-2">
-                <div className="flex gap-2">
-                  <Heart />
-                  <Link href="/user/wishlist" className="text-base font-medium">
-                    Wishlist
-                  </Link>
-                </div>
-
-                {!role && (
-                  <>
+                <div className="flex gap-4 items-center border border-gray-300 rounded-md px-2 py-2 hover:border-blue-600 transition-colors">
+                  {role !== "seller" && (
+                    <div className="flex gap-4 items-center">
+                      <Heart className="w-5 h-5" />
+                      <Link
+                        href="/user/wishlist"
+                        className="text-base font-medium"
+                      >
+                        Wishlist
+                      </Link>
+                    </div>
+                  )}
+                  {role === "seller" && (
                     <Link
-                      href="/authenthication/login"
+                      href="/seller/dashboard"
                       className="text-base font-medium"
                     >
-                      Login
+                      Dashboard
                     </Link>
-                    <Link
-                      href="/authenthication/register"
-                      className="text-base font-medium"
-                    >
-                      Register
-                    </Link>
-                  </>
-                )}
-
-                {role === "seller" && (
-                  <Link
-                    href="/seller/dashboard"
-                    className="text-base font-medium"
-                  >
-                    Dashboard
-                  </Link>
-                )}
-              </div>
-
-              {/* USER MENU MOBILE */}
-              {role === "user" && username && (
-                <div className="mt-auto mb-2 px-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-left text-xl font-semibold"
-                      >
-                        {username}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem
-                        onClick={() => setShowLogoutDialog(true)}
-                        className="cursor-pointer flex items-center gap-2 text-lg"
-                      >
-                        <LogOut className="h-5 w-5" />
-                        Logout
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  )}
                 </div>
-              )}
-            </SheetContent>
-          </Sheet>
 
-          {/* Logo */}
-          <Link
-            href="/"
-            className="mt-4 ml-4 lg:ml-16 hidden lg:flex"
-            prefetch={false}
-          >
-            <p className="text-[#2D9CDB] font-bold text-3xl">TBPedia</p>
-          </Link>
+                {role === "user" && username && (
+                  <div className="mt-auto mb-2 px-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start text-left text-lg font-medium"
+                        >
+                          <User className="w-6 h-6" />
+                          {username}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={() => setShowLogoutDialog(true)}
+                          className="cursor-pointer flex items-center gap-2 text-sm"
+                        >
+                          <LogOut className="h-5 w-5" />
+                          Logout
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+              </SheetContent>
+            </Sheet>
 
-          {/* Kategori */}
-          <div className="hidden lg:block ml-6 mt-4">
-            <Kategori />
+            <Link href="/" className="hidden lg:flex" prefetch={false}>
+              <p className="text-[#2D9CDB] font-bold text-3xl">TBPedia</p>
+            </Link>
+
+            <div className="hidden lg:block mb-4">
+              <Kategori />
+            </div>
           </div>
 
-          {/* Search */}
-          <div className="relative w-full max-w-xl ml-4 mt-4">
+          {/* Center Section - Search */}
+          <div className="relative flex-grow max-w-2xl mx-4">
             <form onSubmit={handleSearchSubmit}>
               <div className="relative">
                 <Input
@@ -289,44 +278,50 @@ export default function Navbars() {
             )}
           </div>
 
-          {/* Wishlist (desktop only) */}
-          <Link
-            href="/user/wishlist"
-            className="font-medium text-sm mt-4 ml-8 hover:text-[#2D9CDB] transition-colors hidden lg:block"
-          >
-            Wishlist
-          </Link>
+          {/* Right Section - Desktop Navigation */}
+          <nav className="flex items-center gap-6 shrink-0">
+            {role !== "seller" && (
+              <Link
+                href="/user/wishlist"
+                className="hidden lg:flex font-medium text-sm hover:text-[#2D9CDB] transition-colors"
+              >
+                Wishlist
+              </Link>
+            )}
 
-          {/* Desktop Auth */}
-          <nav className="ml-auto hidden lg:flex gap-6 mt-4">
             {!role && (
               <>
                 <Link
                   href="/authenthication/login"
-                  className="text-gray-700 hover:text-[#2D9CDB]"
+                  className=" text-gray-700 hover:text-[#2D9CDB]"
                 >
                   Login
                 </Link>
                 <Link
                   href="/authenthication/register"
-                  className="text-gray-700 hover:text-[#2D9CDB]"
+                  className="hidden lg:flex text-gray-700 hover:text-[#2D9CDB]"
                 >
                   Register
                 </Link>
               </>
             )}
+
             {role === "seller" && (
               <Link
                 href="/seller/dashboard"
-                className="text-gray-700 hover:text-[#2D9CDB]"
+                className="hidden lg:flex text-gray-700 hover:text-[#2D9CDB]"
               >
                 Dashboard
               </Link>
             )}
+
             {role === "user" && username && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    className="hidden lg:flex items-center gap-2"
+                  >
                     <User className="h-5 w-5" />
                     {username}
                   </Button>
@@ -345,7 +340,7 @@ export default function Navbars() {
           </nav>
         </header>
 
-        {/* Alert Dialog for Logout Confirmation */}
+        {/* Logout Dialog */}
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Yakin ingin logout?</AlertDialogTitle>

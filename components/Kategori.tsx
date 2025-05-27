@@ -48,12 +48,18 @@ export function Kategori() {
   >(null);
   const [products, setProducts] = useState<Product[]>([]);
   const router = useRouter();
-
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   // Fetch main categories
   useEffect(() => {
-    axios.get("http://localhost:8000/api/categories").then((res) => {
-      setCategories(res.data.content.data);
-    });
+    axios
+      .get(`${baseUrl}/api/categories`, {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
+      })
+      .then((res) => {
+        setCategories(res.data.content.data);
+      });
   }, []);
 
   // Fetch sub-categories
@@ -61,7 +67,12 @@ export function Kategori() {
     if (selectedCategory) {
       axios
         .get(
-          `http://localhost:8000/api/categories/${selectedCategory}?with=subCategories`
+          `${baseUrl}/api/categories/${selectedCategory}?with=subCategories`,
+          {
+            headers: {
+              "ngrok-skip-browser-warning": "true",
+            },
+          }
         )
         .then((res) => {
           setSubCategories(res.data.content.sub_categories || []);
@@ -74,7 +85,12 @@ export function Kategori() {
     if (hoveredSubCategory) {
       axios
         .get(
-          `http://localhost:8000/api/sub-categories/${hoveredSubCategory}?with=subSubCategories`
+          `${baseUrl}/api/sub-categories/${hoveredSubCategory}?with=subSubCategories`,
+          {
+            headers: {
+              "ngrok-skip-browser-warning": "true",
+            },
+          }
         )
         .then((res) => {
           setSubSubCategories(res.data.content.sub_sub_categories || []);
@@ -88,9 +104,11 @@ export function Kategori() {
   useEffect(() => {
     if (hoveredSubSubCategory) {
       axios
-        .get(
-          `http://localhost:8000/api/sub-sub-categories/${hoveredSubSubCategory}`
-        )
+        .get(`${baseUrl}/api/sub-sub-categories/${hoveredSubSubCategory}`, {
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
+        })
         .then((res) => {
           const products =
             res.data.content.product_categories?.map((pc: any) => pc.product) ||

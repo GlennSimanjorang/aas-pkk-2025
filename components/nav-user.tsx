@@ -36,6 +36,7 @@ export function NavUser() {
   const [username, setUsername] = useState("User");
   const [openDialog, setOpenDialog] = useState(false);
   const router = useRouter();
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
     const cookies = getCookies();
@@ -45,14 +46,12 @@ export function NavUser() {
   const handleLogout = async () => {
     try {
       const token = getCookie("token");
-      const response = await axios.get(
-        "http://localhost:8000/api/auth/logout",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`${baseUrl}/api/auth/logout`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
 
       if (response.status === 200) {
         toast.success("Berhasil logout");
