@@ -106,7 +106,7 @@ export default function Page() {
 
     const token = getCookie("token");
     const formData = new FormData();
-    formData.append("imageFile", selectedFile.file); 
+    formData.append("imageFile", selectedFile.file);
 
     try {
       const response = await axios.post(
@@ -121,11 +121,13 @@ export default function Page() {
         }
       );
 
-      // Optimasi: Update state langsung tanpa reload semua data
+      // Gunakan URL dari backend langsung (jika kamu tahu format nama filenya)
+      const imageUrl = `${baseUrl}/storage/product-images/${selectedFile.slug}.jpeg`;
+
       setData((prev) =>
         prev.map((product) =>
           product.slug === selectedFile.slug
-            ? { ...product, image: URL.createObjectURL(selectedFile.file) }
+            ? { ...product, image: imageUrl }
             : product
         )
       );
@@ -137,15 +139,16 @@ export default function Page() {
       const input = document.getElementById(
         `file-input-${selectedFile.slug}`
       ) as HTMLInputElement;
-      if (input) input.value = ""; 
+      if (input) input.value = "";
     } catch (error: any) {
-      console.error("Error detail:", error.response?.data); 
+      console.error("Error detail:", error.response?.data);
       toast.error(
         error.response?.data?.message ||
           "Gagal mengupload gambar. Cek format file (max 2MB)"
       );
     }
   };
+  
 
   return (
     <SidebarProvider>
@@ -205,7 +208,11 @@ export default function Page() {
               >
                 <div className="relative group aspect-square mx-3 mt-3 rounded-lg overflow-hidden">
                   <img
-                    src={item.image}
+                    src={
+                      item.image && baseUrl
+                        ? item.image.replace("http://localhost:3001", baseUrl)
+                        : item.image || ""
+                    }
                     alt={item.name}
                     className="object-cover w-full h-full rounded-lg"
                   />

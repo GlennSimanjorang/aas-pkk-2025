@@ -6,14 +6,7 @@ import axios from "axios";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type Product = {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-  stock: number;
-  slug: string;
-};
+
 
 export default function Main() {
   const [data, setData] = useState<Product[]>([]);
@@ -110,7 +103,7 @@ export default function Main() {
       <div className="max-w-screen-xl mx-auto px-4">
         <h1 className="font-bold text-xl my-6 ml-2 sm:ml-6">
           TBPedia - Rekomendasi Untuk Kamu{" "}
-          <a href="/products" className="ml-1 text-[#00AA5B] text-sm">
+          <a href="/user/allProduk" className="ml-1 text-[#00AA5B] text-sm">
             Lihat Semua
           </a>
         </h1>
@@ -125,7 +118,7 @@ export default function Main() {
             >
               <div>
                 <img
-                  src={item.image}
+                  src={`${item.image}?ngrok-skip-browser-warning`}
                   alt={item.name}
                   width={150}
                   height={150}
